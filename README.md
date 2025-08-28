@@ -36,16 +36,23 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configure Environment
-Update `.env` file with your Azure credentials:
-```bash
-# Computer Vision
-AI_SERVICE_ENDPOINT=https://your-computer-vision.cognitiveservices.azure.com/
-AI_SERVICE_KEY=your_computer_vision_key
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-# Face API
-FACE_ENDPOINT=https://your-face-api.cognitiveservices.azure.com/
-FACE_KEY=your_face_api_key
-```
+2. Update `.env` file with your Azure credentials:
+   ```bash
+   # Computer Vision API (for Image Analysis and OCR)
+   COMPUTER_VISION_ENDPOINT=https://your-computer-vision.cognitiveservices.azure.com/
+   COMPUTER_VISION_KEY=your_computer_vision_key_here
+   
+   # Face API (for Face Detection)
+   FACE_ENDPOINT=https://your-face-api.cognitiveservices.azure.com/
+   FACE_KEY=your_face_api_key_here
+   ```
+
+**🔐 Important**: Never commit the `.env` file to git. It's already in `.gitignore`.
 
 ## 🎯 Running the Demo
 

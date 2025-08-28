@@ -49,14 +49,85 @@ def check_face_api_available():
 
 
 def demo_image_analysis():
-    """Demo 1: Image Analysis"""
+    """Demo 1: Image Analysis with real Computer Vision API"""
     print("\n📖 CHAPTER 1: IMAGE ANALYSIS")
     print("=" * 60)
     print("🎬 Scenario: Visitor enters office lobby")
     print("🤖 AI Task: Analyze scene and detect objects/people")
     print("🔍 Analyzing: street.jpg")
     
-    # [Previous image analysis code would go here - same as current demos]
+    try:
+        from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+        from msrest.authentication import CognitiveServicesCredentials
+        load_dotenv()
+        
+        # Get Computer Vision credentials
+        cv_endpoint = os.getenv('COMPUTER_VISION_ENDPOINT')
+        cv_key = os.getenv('COMPUTER_VISION_KEY')
+        
+        if not cv_endpoint or not cv_key:
+            print("❌ Computer Vision credentials not found, using educational mode")
+            demo_image_analysis_educational()
+            return
+            
+        # Initialize Computer Vision client
+        cv_credentials = CognitiveServicesCredentials(cv_key)
+        cv_client = ComputerVisionClient(cv_endpoint, cv_credentials)
+        
+        # Use the actual image from the local images folder
+        image_path = "images/street.jpg"
+        
+        # Real Computer Vision API call
+        with open(image_path, "rb") as image_data:
+            analysis = cv_client.analyze_image_in_stream(
+                image_data,
+                visual_features=[
+                    'Categories', 'Description', 'Objects', 'Tags', 'Adult'
+                ]
+            )
+        
+        # Display real results
+        if analysis.description.captions:
+            caption = analysis.description.captions[0]
+            confidence = caption.confidence * 100
+            print(f"\n🏷️  CAPTION: '{caption.text}'")
+            print(f"   Confidence: {confidence:.1f}%")
+        
+        if analysis.tags:
+            print("\n🏷️  TOP TAGS:")
+            for tag in analysis.tags[:5]:
+                confidence = tag.confidence * 100
+                print(f"   • {tag.name} ({confidence:.1f}%)")
+        
+        if analysis.objects:
+            print(f"\n📦 OBJECTS: Found {len(analysis.objects)}")
+            for obj in analysis.objects[:5]:
+                confidence = obj.confidence * 100
+                print(f"   • {obj.object_property} ({confidence:.1f}%)")
+        
+        # Count people in objects
+        people_count = sum(1 for obj in analysis.objects
+                          if 'person' in obj.object_property.lower())
+        print(f"\n� PEOPLE: Detected {people_count}")
+        
+        print("\n✅ Real Computer Vision API working!")
+        
+    except FileNotFoundError:
+        print(f"\n❌ Image file not found: {image_path}")
+        demo_image_analysis_educational()
+    except Exception as e:
+        print(f"\n❌ Computer Vision API Error: {str(e)}")
+        demo_image_analysis_educational()
+    
+    print("\n💡 AI-102 KEY CONCEPTS:")
+    print("   🎯 Visual Features: Choose analysis type (caption, tags, objects)")
+    print("   📊 Confidence Scores: 0.0 to 1.0 reliability measure")
+    print("   📍 Bounding Boxes: Object locations (x, y, width, height)")
+    print("   ⚡ Synchronous Processing: Real-time analysis")
+
+
+def demo_image_analysis_educational():
+    """Fallback educational mode for image analysis"""
     print("\n🏷️  CAPTION: 'a man walking a dog on a leash'")
     print("   Confidence: 83.1%")
     
@@ -74,32 +145,97 @@ def demo_image_analysis():
     
     print("\n👥 PEOPLE: Detected 1")
     
-    print("\n💡 AI-102 KEY CONCEPTS:")
-    print("   🎯 Visual Features: Choose analysis type (caption, tags, objects)")
-    print("   📊 Confidence Scores: 0.0 to 1.0 reliability measure")
-    print("   📍 Bounding Boxes: Object locations (x, y, width, height)")
+    print("\n💡 Educational Mode: Computer Vision API not configured")
     print("   ⚡ Synchronous Processing: Real-time analysis")
 
 
 def demo_ocr():
-    """Demo 2: OCR Text Extraction"""
+    """Demo 2: OCR Text Extraction with real Computer Vision API"""
     print("\n📖 CHAPTER 2: OCR (OPTICAL CHARACTER RECOGNITION)")
     print("=" * 60)
     print("🎬 Scenario: Security badge scanner at entrance")
     print("🤖 AI Task: Extract text from visitor's ID badge")
-    print("🔍 Analyzing: business-card.jpg")
+    print("🔍 Analyzing: Business-card.jpg")
     
-    # [Previous OCR code would go here]
+    try:
+        from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+        from msrest.authentication import CognitiveServicesCredentials
+        import time
+        load_dotenv()
+        
+        # Get Computer Vision credentials
+        cv_endpoint = os.getenv('COMPUTER_VISION_ENDPOINT')
+        cv_key = os.getenv('COMPUTER_VISION_KEY')
+        
+        if not cv_endpoint or not cv_key:
+            print("❌ Computer Vision credentials not found, using educational mode")
+            demo_ocr_educational()
+            return
+            
+        # Initialize Computer Vision client
+        cv_credentials = CognitiveServicesCredentials(cv_key)
+        cv_client = ComputerVisionClient(cv_endpoint, cv_credentials)
+        
+        # Use the actual image from the local images folder
+        image_path = "images/Business-card.jpg"
+        
+        # Real OCR API call using Read API
+        with open(image_path, "rb") as image_data:
+            read_operation = cv_client.read_in_stream(image_data, raw=True)
+        
+        # Get operation ID from headers
+        operation_id = read_operation.headers["Operation-Location"].split("/")[-1]
+        
+        # Poll for results
+        print("   Processing text extraction...")
+        while True:
+            result = cv_client.get_read_result(operation_id)
+            if result.status not in ['notStarted', 'running']:
+                break
+            time.sleep(1)
+        
+        # Display real results
+        if result.status == 'succeeded':
+            print("\n📝 EXTRACTED TEXT:")
+            line_num = 1
+            for page in result.analyze_result.read_results:
+                for line in page.lines:
+                    confidence = getattr(line, 'confidence', 0.95) * 100
+                    print(f"   Line {line_num}: '{line.text}' "
+                          f"(confidence: {confidence:.1f}%)")
+                    line_num += 1
+                    if line_num > 6:  # Limit output for demo
+                        break
+        else:
+            print(f"\n❌ OCR failed with status: {result.status}")
+            demo_ocr_educational()
+            return
+        
+        print("\n✅ Real OCR API working!")
+        
+    except FileNotFoundError:
+        print(f"\n❌ Image file not found: {image_path}")
+        demo_ocr_educational()
+    except Exception as e:
+        print(f"\n❌ OCR API Error: {str(e)}")
+        demo_ocr_educational()
+    
+    print("\n💡 AI-102 KEY CONCEPTS:")
+    print("   📖 Read API: Best for documents and printed text")
+    print("   🔄 Async Processing: For large documents")
+    print("   🌍 Language Detection: 73+ languages supported")
+    print("   📐 Bounding Polygons: Exact text location coordinates")
+
+
+def demo_ocr_educational():
+    """Fallback educational mode for OCR"""
     print("\n📝 EXTRACTED TEXT:")
     print("   Line 1: 'Dr. Sarah Chen' (confidence: 99.8%)")
     print("   Line 2: 'Senior Data Scientist' (confidence: 99.5%)")
     print("   Line 3: 'Microsoft Corporation' (confidence: 99.9%)")
     print("   Line 4: 'sarah.chen@microsoft.com' (confidence: 98.7%)")
     
-    print("\n💡 AI-102 KEY CONCEPTS:")
-    print("   📖 Read API: Best for documents and printed text")
-    print("   🔄 Async Processing: For large documents")
-    print("   🌍 Language Detection: 73+ languages supported")
+    print("\n💡 Educational Mode: Computer Vision API not configured")
     print("   📐 Bounding Polygons: Exact text location coordinates")
 
 
@@ -135,8 +271,8 @@ def demo_face_analysis_real():
         
         print("🔍 Analyzing: people.jpg")
         
-        # Use the actual image from the media folder
-        image_path = "../Instructions/media/people.jpg"
+        # Use the actual image from the local images folder
+        image_path = "images/people.jpg"
         
         # Real Face API call - basic face detection only
         # Note: Advanced features require Microsoft approval
