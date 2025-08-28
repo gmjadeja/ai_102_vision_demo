@@ -1,0 +1,13 @@
+azure-ai-vision-imageanalysis==1.0.0b3
+azure-ai-vision-face==1.0.0b2
+python-dotenv==1.0.0
+requests==2.31.0
+
+# Visualization packages - MSYS2 Installation Issues
+# These packages have DLL loading issues in MSYS2 environment
+# Alternative approaches:
+# 1. Use standard Windows Python installation with pip
+# 2. Use conda environment 
+# 3. Current demo works without visualization (text output only)
+# matplotlib==3.7.2
+# Pillow==10.0.0
