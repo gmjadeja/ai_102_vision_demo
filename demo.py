@@ -77,6 +77,18 @@ def demo_image_analysis():
         # Use the actual image from the local images folder
         image_path = "images/street.jpg"
         
+        # PROOF: Show we're using real image file
+        if os.path.exists(image_path):
+            file_size = os.path.getsize(image_path)
+            print(f"   📁 Loading REAL image: {image_path} ({file_size:,} bytes)")
+        else:
+            print(f"   ❌ Image not found: {image_path}")
+            demo_image_analysis_educational()
+            return
+        
+        # PROOF: Show we're calling real Azure API
+        print(f"   🌐 Calling Azure Computer Vision API: {cv_endpoint}")
+        
         # Real Computer Vision API call
         with open(image_path, "rb") as image_data:
             analysis = cv_client.analyze_image_in_stream(
@@ -161,6 +173,7 @@ def demo_ocr():
         from azure.cognitiveservices.vision.computervision import ComputerVisionClient
         from msrest.authentication import CognitiveServicesCredentials
         import time
+        import os
         load_dotenv()
         
         # Get Computer Vision credentials
@@ -178,6 +191,18 @@ def demo_ocr():
         
         # Use the actual image from the local images folder
         image_path = "images/Business-card.jpg"
+        
+        # PROOF: Show we're using real image file
+        if os.path.exists(image_path):
+            file_size = os.path.getsize(image_path)
+            print(f"   📁 Loading REAL image: {image_path} ({file_size:,} bytes)")
+        else:
+            print(f"   ❌ Image not found: {image_path}")
+            demo_ocr_educational()
+            return
+            
+        # PROOF: Show we're calling real Azure API
+        print(f"   🌐 Calling Azure OCR Read API: {cv_endpoint}")
         
         # Real OCR API call using Read API
         with open(image_path, "rb") as image_data:
@@ -273,6 +298,17 @@ def demo_face_analysis_real():
         
         # Use the actual image from the local images folder
         image_path = "images/people.jpg"
+        
+        # PROOF: Show we're using real image file
+        if os.path.exists(image_path):
+            file_size = os.path.getsize(image_path)
+            print(f"   📁 Loading REAL image: {image_path} ({file_size:,} bytes)")
+        else:
+            print(f"   ❌ Image not found: {image_path}")
+            return
+            
+        # PROOF: Show we're calling real Azure API
+        print(f"   🌐 Calling Azure Face API: {face_endpoint}")
         
         # Real Face API call - basic face detection only
         # Note: Advanced features require Microsoft approval
